@@ -28,7 +28,6 @@ connection.connect(function(err){
 });
 
 
-
 function start(){
     inquirer
         .prompt([
@@ -47,7 +46,7 @@ function start(){
                     add();
                     break;
                 case "Update":
-                    console.log("Update employee function here");
+                    updateEmployee();
                 break;
                 case "Exit":
                     console.log("All done");
@@ -58,6 +57,7 @@ function start(){
         });
 }
 
+//VIEW FUNCTION SET
 function view(){
     inquirer
         .prompt([
@@ -102,7 +102,7 @@ function viewByDepartment(){
                     name: "choice",
                     type: "rawlist",
                     choices: function(){
-                        var choiceArr = [];
+                        let choiceArr = [];
                         for(i=0; i< results.length; i++){
                             choiceArr.push(results[i].name);
                         }
@@ -111,7 +111,6 @@ function viewByDepartment(){
                     message: "Select department"
                 }
             ]).then(function(answer){
-                console.log(answer.choice);
                 connection.query(
                     "SELECT e.id AS ID, e.first_name AS First, e.last_name AS Last, e.role_id AS Role, r.salary AS Salary, m.last_name AS Manager, d.name AS Department FROM employee e LEFT JOIN employee m ON e.manager_id = m.id LEFT JOIN role r ON e.role_id = r.title LEFT JOIN department d ON r.department_id = d.id WHERE d.name =?", [answer.choice], function(err, results){
                         if(err) throw err;
@@ -158,7 +157,7 @@ function viewByRole(){
 }
 
 
-
+//ADD FUNCTION SET
 function add(){
     inquirer
         .prompt([
@@ -329,5 +328,98 @@ function addEmployee(){
         });
     });
     
+}
+
+//UPDATE FUNCTION SET
+function updateEmployee(){
+    //Select employee to update
+    connection.query("SELECT * FROM employee",
+        function(err, results){
+        if(err) throw err;
+        inquirer 
+            .prompt([
+                {
+                    name: "choice",
+                    type: "rawlist",
+                    choices: function(){
+                        let choiceArr = [];
+                        for(i=0; i< results.length; i++)
+                        {
+                            choiceArr.push(results[i].last_name);
+                        }
+                        return choiceArr;
+                    },
+                    message: "Select employee to update"
+                }
+            ])
+            .then(function(answer){
+                //SaveName is employee
+                const saveName = answer.choice;
+                
+                connection.query("SELECT * FROM employee WHERE last_name = ?", [answer.choice], 
+                function(err, results){
+                    connection.query("SELECT * FROM department", 
+                    function(err, results){
+                        if(err) throw err;
+                    inquirer
+                    .prompt([
+                        {
+                            name: "role_id",
+                            type: "input",
+                            message: "Enter new role title "
+                        },
+                        {
+                            name: "salary",
+                            type: "number",
+                            validate: function(value){
+                                if(isNaN(value) === false){
+                                    return true;
+                                }
+                                return false;
+                            },
+                            message: "Enter new salary",
+                        },
+                        {
+                            name: "manager",
+                            type: "number",
+                            validate: function(value){
+                                if(isNaN(value) === false){
+                                    return true;
+                                }
+                                return false;
+                            },
+                            message: "Enter new manager ID",
+                            default: "1"
+                        },
+                        {
+                            name: "department",
+                            type: "rawlist",
+                            choices: function(){
+                                var choiceArr = [];
+                                for(i=0; i< results.length; i++){
+                                    choiceArr.push(results[i].name)
+                                }
+                                return choiceArr;
+                            },
+                            message: "Select Department"
+                        }
+                    ]).then(function(answer){
+                        console.log(answer);
+                        console.log(saveName);
+                        connection.query("UPDATE employee SET ? WHERE last_name = ?",
+                            [
+                                {
+                                    role_id: answer.role_id,
+                                    manager_id: answer.manager
+                                }, saveName  
+                            ], 
+                        ),
+                        console.log("Employee updated");
+                        viewAllEmployees();
+                    });
+                })      
+            })      
+        })
+    })
 }
 
