@@ -281,9 +281,9 @@ function addEmployee(){
             },
             {
                 name: "manager",
-                type: "input",
-                message: "Enter Manager",
-                default: "Swanson"
+                type: "number",
+                message: "Enter Manager ID",
+                default: "1"
             },
             {
                 name: "department",
@@ -300,6 +300,29 @@ function addEmployee(){
         ]).then(function(answer){
             //answer is an object with key value pairs from inquirer prompt
             console.log(answer);
+            connection.query(
+                "INSERT INTO employee SET ?",
+                {
+                    first_name: answer.firstName,
+                    last_name: answer.lastName,
+                    role_id: answer.roleTitle,
+                    manager_id: answer.manager
+                }
+            );
+            connection.query(
+                "INSERT INTO role SET ?",
+                {
+                    title: answer.roleTitle,
+                    salary: answer.salary
+                }
+            );
+            connection.query(
+                "INSERT INTO department SET ?",
+                {
+                    name: answer.department
+                },
+                console.log("Employee updated")
+            );
         });
     });
     
