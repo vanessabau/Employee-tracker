@@ -49,7 +49,9 @@ function start(){
                     updateEmployee();
                 break;
                 case "Exit":
+                    console.log("-----------------------------------------");
                     console.log("All done");
+                    console.log("-----------------------------------------");
                     break;
                 default:
                     console.log("default");
@@ -227,13 +229,26 @@ function addEmployeeRole(){
                     }
                     return false;
                 }
+            },
+            {
+                name: "department_id",
+                type: "number",
+                message: "Enter department id",
+                validate: function(value){
+                    if(isNaN(value) === false){
+                        return true;
+                    }
+                    return false;
+                }
             }
+
         ]).then(function(answer){
             connection.query(
                 "INSERT INTO role SET ?", 
                 {
                     title: answer.role,
                     salary: answer.salary,
+                    department_id: answer.department_id
                 }, 
                 function(err){
                     if(err) throw err;
@@ -247,7 +262,7 @@ function addEmployeeRole(){
 }
 
 function addEmployee(){
-    connection.query("SELECT * FROM department", function(err, results){
+    connection.query("SELECT * FROM role", function(err, results){
         if(err) throw err;
         //Once you have results prompt user to new employee information
         inquirer
@@ -263,71 +278,47 @@ function addEmployee(){
                 message: "Enter employee last name"
             },  
             {
-                name: "roleTitle",
-                type: "input",
-                message: "Enter employee's role"
+                name: "role",
+                type: "rawlist",
+                choices: function(){
+                    var choiceArr = [];
+                    for(i=0; i< results.length; i++){
+                        choiceArr.push(results[i].title)
+                    }
+                    return choiceArr;
+                },
+                message: "Select title"
             },
             {
-                name: "salary",
+                name: "manager",
                 type: "number",
-                message: "Enter employee salary",
                 validate: function(value){
                     if(isNaN(value) === false){
                         return true;
                     }
                     return false;
-                }
-            },
-            {
-                name: "manager",
-                type: "number",
-                message: "Enter Manager ID",
-                default: "1"
-            },
-            {
-                name: "department",
-                type: "rawlist",
-                choices: function(){
-                    var choiceArr = [];
-                    for(i=0; i< results.length; i++){
-                        choiceArr.push(results[i].name)
-                    }
-                    return choiceArr;
                 },
-                message: "Select Department"
+                message: "Enter manager ID",
+                default: "1"
             }
-        ]).then(function(answer){
+        ])
+        .then(function(answer){
             //answer is an object with key value pairs from inquirer prompt
-            console.log(answer); //delete this line in final version
             connection.query(
                 "INSERT INTO employee SET ?",
                 {
                     first_name: answer.firstName,
                     last_name: answer.lastName,
-                    role_id: answer.roleTitle,
+                    role_id: answer.role,
                     manager_id: answer.manager
                 }
-            );
-            connection.query(
-                "INSERT INTO role SET ?",
-                {
-                    title: answer.roleTitle,
-                    salary: answer.salary
-                }
-            );
-            connection.query(
-                "INSERT INTO department SET ?",
-                {
-                    name: answer.department
-                },
-                console.log("-----------------------------------------"),
-                console.log("Employee Added Successfully"),
-                console.log("-----------------------------------------"),
-                //start()
-            );
+            )
+            console.log("-----------------------------------------"),
+            console.log("Employee Added Successfully"),
+            console.log("-----------------------------------------");
+            start()  
         });
     });
-    
 }
 
 //UPDATE FUNCTION SET
@@ -355,69 +346,52 @@ function updateEmployee(){
             .then(function(answer){
                 //SaveName is employee
                 const saveName = answer.choice;
-                
-                connection.query("SELECT * FROM employee WHERE last_name = ?", [answer.choice], 
+
+                connection.query("SELECT * FROM employee", 
                 function(err, results){
-                    connection.query("SELECT * FROM department", 
-                    function(err, results){
-                        if(err) throw err;
-                    inquirer
-                    .prompt([
-                        {
-                            name: "role_id",
-                            type: "input",
-                            message: "Enter new role title "
+                    if(err) throw err;
+                inquirer
+                .prompt([
+                    {
+                        name: "role",
+                        type: "rawlist",
+                        choices: function(){
+                            var choiceArr = [];
+                            for(i=0; i< results.length; i++){
+                                choiceArr.push(results[i].role_id)
+                            }
+                            return choiceArr;
                         },
-                        {
-                            name: "salary",
-                            type: "number",
-                            validate: function(value){
-                                if(isNaN(value) === false){
-                                    return true;
-                                }
-                                return false;
-                            },
-                            message: "Enter new salary",
+                        message: "Select title"
+                    },
+                    {
+                        name: "manager",
+                        type: "number",
+                        validate: function(value){
+                            if(isNaN(value) === false){
+                                return true;
+                            }
+                            return false;
                         },
-                        {
-                            name: "manager",
-                            type: "number",
-                            validate: function(value){
-                                if(isNaN(value) === false){
-                                    return true;
-                                }
-                                return false;
-                            },
-                            message: "Enter new manager ID",
-                            default: "1"
-                        },
-                        {
-                            name: "department",
-                            type: "rawlist",
-                            choices: function(){
-                                var choiceArr = [];
-                                for(i=0; i< results.length; i++){
-                                    choiceArr.push(results[i].name)
-                                }
-                                return choiceArr;
-                            },
-                            message: "Select Department"
-                        }
-                    ]).then(function(answer){
-                        console.log(answer);
-                        console.log(saveName);
-                        connection.query("UPDATE employee SET ? WHERE last_name = ?",
-                            [
-                                {
-                                    role_id: answer.role_id,
-                                    manager_id: answer.manager
-                                }, saveName  
-                            ], 
-                        ),
-                        console.log("Employee updated");
-                        viewAllEmployees();
-                    });
-                })      
+                        message: "Enter new manager ID",
+                        default: "1"
+                    }
+                ]).then(function(answer){
+                    console.log(answer);
+                    console.log(saveName);
+                    connection.query("UPDATE employee SET ? WHERE last_name = ?",
+                        [
+                            {
+                                role_id: answer.role,
+                                manager_id: answer.manager
+                            }, saveName  
+                        ], 
+                    ),
+                    console.log("-----------------------------------------");
+                    console.log("Employee updated");
+                    console.log("-----------------------------------------");
+                    start();
+                });     
             })      
         })
     })
