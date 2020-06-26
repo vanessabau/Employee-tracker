@@ -177,7 +177,7 @@ function add(){
                     addEmployeeRole();
                     break;
                 case "Employee":
-                    console.log("addEmployee()");
+                    addEmployee();
                     break;
                 default:
                     console.log("default");
@@ -245,5 +245,62 @@ function addEmployeeRole(){
                 }
             )
         })
+}
+
+function addEmployee(){
+    connection.query("SELECT * FROM department", function(err, results){
+        if(err) throw err;
+        //Once you have results prompt user to new employee information
+        inquirer
+        .prompt([
+            {
+                name: "firstName",
+                type: "input",
+                message: "Enter employee first name"
+            },
+            {
+                name: "lastName",
+                type: "input",
+                message: "Enter employee last name"
+            },  
+            {
+                name: "roleTitle",
+                type: "input",
+                message: "Enter employee's role"
+            },
+            {
+                name: "salary",
+                type: "number",
+                message: "Enter employee salary",
+                validate: function(value){
+                    if(isNaN(value) === false){
+                        return true;
+                    }
+                    return false;
+                }
+            },
+            {
+                name: "manager",
+                type: "input",
+                message: "Enter Manager",
+                default: "Swanson"
+            },
+            {
+                name: "department",
+                type: "rawlist",
+                choices: function(){
+                    var choiceArr = [];
+                    for(i=0; i< results.length; i++){
+                        choiceArr.push(results[i].name)
+                    }
+                    return choiceArr;
+                },
+                message: "Select Department"
+            }
+        ]).then(function(answer){
+            console.log(answer);
+        });
+    });
+    
 }
 

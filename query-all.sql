@@ -9,7 +9,6 @@ SELECT
     m.last_name AS Manager,
     d.name AS Department
     
-    
 -- JOIN employee to its self
 FROM employee e
 LEFT JOIN employee m
