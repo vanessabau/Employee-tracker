@@ -299,7 +299,7 @@ function addEmployee(){
             }
         ]).then(function(answer){
             //answer is an object with key value pairs from inquirer prompt
-            console.log(answer);
+            console.log(answer); //delete this line in final version
             connection.query(
                 "INSERT INTO employee SET ?",
                 {
@@ -321,7 +321,10 @@ function addEmployee(){
                 {
                     name: answer.department
                 },
-                console.log("Employee updated")
+                console.log("-----------------------------------------"),
+                console.log("Employee Added Successfully"),
+                console.log("-----------------------------------------"),
+                //start()
             );
         });
     });
