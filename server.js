@@ -27,7 +27,7 @@ connection.connect(function(err){
     start();
 });
 
-
+//Basic functionality of application
 function start(){
     inquirer
         .prompt([
@@ -253,7 +253,7 @@ function addEmployeeRole(){
                 function(err){
                     if(err) throw err;
                     console.log("-----------------------------------------");
-                    console.log("Departments updated with "+ answer.role);
+                    console.log("Employee Roles updated with "+ answer.role);
                     console.log("-----------------------------------------");
                     start();
                 }
