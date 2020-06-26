@@ -298,6 +298,7 @@ function addEmployee(){
                 message: "Select Department"
             }
         ]).then(function(answer){
+            //answer is an object with key value pairs from inquirer prompt
             console.log(answer);
         });
     });
